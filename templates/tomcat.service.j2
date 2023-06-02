@@ -1,0 +1,24 @@
+### BEGIN ANSIBLE MANAGED BLOCK
+## Systemd unit file for tomcat instances.
+#
+## created by ago@tw.de 03012019
+
+[Unit]
+Description=Apache Tomcat Web Application Container
+After=network.target
+
+[Service]
+Type=forking
+EnvironmentFile={{ tomcat_environment_path }}/tomcat.conf
+WorkingDirectory={{ tomcat_install_path }}
+
+ExecStart={{ tomcat_bin_path }}/startup.sh
+ExecStop={{ tomcat_bin_path }}/shutdown.sh
+
+User={{ tomcat_user }}
+Group={{ tomcat_group }}
+
+[Install]
+WantedBy=multi-user.target
+
+### END ANSIBLE MANAGED BLOCK

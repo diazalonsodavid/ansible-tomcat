@@ -1,0 +1,25 @@
+---
+
+# Enable Tomcat Daemon
+- name: Tomcat | Daemon enablen
+  ansible.builtin.systemd:
+    name: tomcat
+    enabled: true
+    masked: false
+
+# Copy the Tomcat Configs
+- name: Tomcat | Copy tomcat config
+  ansible.builtin.template:
+    src: "{{ item.src }}"
+    dest: "{{ item.dest }}"
+    mode: 0640
+    owner: "{{ tomcat_user }}"
+    group: "{{ tomcat_group }}"
+  with_items:
+    - { src: "tomcat.conf.j2", dest: "{{ tomcat_environment_path }}/tomcat.conf" }
+    - { src: "tomcat-users.j2", dest: "{{ tomcat_conf_path }}/tomcat-users.xml" }
+    - { src: "server.j2", dest: "{{ tomcat_conf_path }}/server.xml" }
+    - { src: "setenv.sh.j2", dest: "{{ tomcat_bin_path }}/setenv.sh" }
+    - { src: "logging.properties.j2", dest: "{{ tomcat_conf_path }}/logging.properties" }
+    - { src: "manager.j2", dest: "{{ manager_conf }}/manager.xml" }
+  notify: Restart tomcat

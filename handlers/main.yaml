@@ -1,0 +1,13 @@
+---
+
+# handlers file for tomcat-role
+
+- name: Start tomcat
+  ansible.builtin.systemd:
+    name: tomcat
+    state: started
+
+- name: Restart tomcat
+  ansible.builtin.systemd:
+    name: tomcat
+    state: restarted

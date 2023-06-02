@@ -1,0 +1,10 @@
+---
+
+# Tomcat vars
+tomcat_build_name: "apache-tomcat-{{ tomcat_version }}"
+tomcat_url: "https://archive.apache.org/dist/tomcat/tomcat-{{ tomcat_version[0:1] }}/v{{ tomcat_version }}/bin/{{ tomcat_package }}"
+tomcat_package: "{{ tomcat_build_name }}.tar.gz"
+
+# Java vars
+java_build_name: "jdk-{{ java_version }}"
+java_url: "https://javadl.oracle.com/webapps/download/AutoDL?BundleId=247125_10e8cce67c7843478f41411b7003171c"

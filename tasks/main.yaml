@@ -1,0 +1,11 @@
+---
+
+- name: Tomcat | Install
+  ansible.builtin.import_tasks: install.yaml
+  # when: tomcat_install == true and group_names == ["app_server"]
+  tags: install
+
+- name: Tomcat | Config
+  ansible.builtin.import_tasks: config.yaml
+  # when: tomcat_config == true and group_names == ["app_server"]
+  tags: config

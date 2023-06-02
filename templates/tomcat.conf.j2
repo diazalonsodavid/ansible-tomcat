@@ -1,0 +1,30 @@
+### BEGIN ANSIBLE MANAGED BLOCK
+## Tomcat environment configuration file.
+#
+## created by ago@tw.de 03012019
+
+# This variable is used to figure out if config is loaded or not.
+
+TOMCAT_CFG_LOADED="1"
+
+# Use Oracle Java 1.8.0_152
+JAVA_HOME="{{ java_install_path }}/jre"
+
+# Java opts
+JAVA_OPTS="-Djava.awt.headless=true -Djava.security.egd=file:/dev/./urandom  -XX:MaxMetaspaceSize=512m -Dfile.encoding=UTF-8 -noverify -Dice.heartbeat.interval=50000 -Dice.heartbeat.timeout=30000 -Dice.heartbeat.retries=3 -Dice.reload.interval=3 -Dice.connection.timeout=60000 -Dice.blocking.connection.timeout=90000 -Dice.upload.max.file.size=10485760 "
+
+# Catalina
+CATALINA_BASE="{{ tomcat_install_path }}"
+CATALINA_HOME="{{ tomcat_install_path }}"
+CATALINA_PID="{{ tomcat_install_path }}/temp/catalina.pid"
+CATALINA_TMPDIR="{{ tomcat_install_path }}/temp"
+#CATALINA_OPTS="-Xms512M -Xmx512M -server -XX:+UseParallelGC"
+{% for option in tomcat_catalina_opts %}
+CATALINA_OPTS="{{ option }}"
+{% endfor %}
+
+
+# User
+TOMCAT_USER="tomcat"
+
+### END ANSIBLE MANAGED BLOCK

@@ -1,0 +1,90 @@
+---
+
+- name: Tomcat | Ensure tomcat group
+  ansible.builtin.group:
+    name: "{{ tomcat_group }}"
+
+- name: Tomcat | Ensure tomcat user
+  ansible.builtin.user:
+    name: "{{ tomcat_user }}"
+    group: "{{ tomcat_group }}"
+    shell: /bin/bash
+
+# Add USER centos to tomcat Group
+- name: Tomcat | add Deploy user to tomcat group
+  ansible.builtin.user:
+    name: "{{ centos_user }}"
+    groups: "{{ tomcat_group }}"
+    append: true
+
+- name: Tomcat | Create logs path
+  ansible.builtin.file:
+    path: "{{ tomcat_logs_path }}"
+    state: directory
+    owner: "{{ tomcat_user }}"
+    group: "{{ tomcat_group }}"
+    mode: 0750
+  when: tomcat_logs_path is defined
+
+- name: Tomcat | Create install path
+  ansible.builtin.file:
+    path: "{{ tomcat_install_path }}"
+    state: directory
+    owner: "{{ tomcat_user }}"
+    group: "{{ tomcat_group }}"
+    mode: 0755
+
+- name: Java | Create install path
+  ansible.builtin.file:
+    path: "{{ java_install_path }}"
+    state: directory
+    owner: "{{ tomcat_user }}"
+    group: "{{ tomcat_group }}"
+    mode: 0755
+
+- name: Java | Create Catalina path
+  ansible.builtin.file:
+    path: "{{ manager_conf }}"
+    state: directory
+    owner: "{{ tomcat_user }}"
+    group: "{{ tomcat_group }}"
+    mode: 0755
+
+- name: Tomcat | Check Tomcat version
+  ansible.builtin.shell: |
+    "java -cp {{ tomcat_install_path }}/lib/catalina.jar org.apache.catalina.util.ServerInfo | grep 'Server version' | sed 's/Server version: //g'"
+  register: tomcat_check
+  changed_when: false
+  ignore_errors: true
+
+# File permissions based on official documentation: https://tomcat.apache.org/tomcat-8.0-doc/security-howto.html
+- name: Tomcat | Download & Extract Tomcat
+  ansible.builtin.unarchive:
+    extra_opts: ['--strip-components=1']
+    src: "{{ tomcat_url }}"
+    remote_src: true
+    dest: "{{ tomcat_install_path }}"
+    owner: "{{ tomcat_user }}"
+    group: "{{ tomcat_group }}"
+    mode: 0750
+  when: 'tomcat_force_reinstall or tomcat_check is failed or tomcat_check.stdout == "Apache Tomcat/tomcat_version"'
+
+- name: Java | Download & Extract Java
+  ansible.builtin.unarchive:
+    extra_opts: ['--strip-components=1']
+    src: "{{ java_url }}"
+    remote_src: true
+    dest: "{{ java_install_path }}"
+    owner: "{{ tomcat_user }}"
+    group: "{{ tomcat_group }}"
+    mode: 0750
+
+- name: Tomcat | Copy Daemon and Environment script
+  ansible.builtin.template:
+    src: "{{ item.src }}"
+    dest: "{{ item.dest }}"
+    mode: 0644
+  with_items:
+    - { src: "tomcat.service.j2", dest: "/lib/systemd/system/tomcat.service" }
+    - { src: "tomcat.conf.j2", dest: "{{ tomcat_environment_path }}/tomcat.conf" }
+  notify: Start tomcat
